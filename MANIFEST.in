@@ -1,0 +1,1 @@
+global-include *.c *.cc *.cmake *.txt *.h *.S *.pl *.errordata *.go

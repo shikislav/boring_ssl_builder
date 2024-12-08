@@ -8,21 +8,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: quay.io/pypa/manylinux_2_34_x86_64
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run manylinux build
-        uses: docker://quay.io/pypa/manylinux_2_34_x86_64
-        with:
-          entrypoint: /bin/bash
-        args: -c "
+      - name: Install dependencies and run build script
+        run: |
           yum install -y cmake gcc g++ make &&
-          chmod +x /github/workspace/test.sh &&
-          cd /github/workspace &&
+          chmod +x test.sh &&
           ./test.sh
-        "
 
       - name: Upload built wheel to PyPI
         if: success()

@@ -38,6 +38,5 @@ jobs:
           TWINE_USERNAME: ${{ secrets.USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-          python3 -m pip install --upgrade twine
-          twine upload dist/*.whl
-
+          /opt/python/cp312-cp312/bin/python -m pip install --upgrade twine &&
+          /opt/python/cp312-cp312/bin/python -m twine upload dist/*.whl

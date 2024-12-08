@@ -18,6 +18,8 @@ jobs:
       - name: Install dependencies and run build script
         run: |
           yum install -y cmake gcc g++ make &&
+          /opt/python/cp312-cp312/bin/python -m ensurepip &&
+          /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip setuptools wheel &&
           chmod +x test.sh &&
           ./test.sh
 

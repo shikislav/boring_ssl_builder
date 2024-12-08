@@ -17,13 +17,12 @@ jobs:
         uses: docker://quay.io/pypa/manylinux_2_34_x86_64
         with:
           entrypoint: /bin/bash
-          args: |
-            -c "
-            yum install -y cmake gcc g++ make &&
-            chmod +x /io/test.sh &&
-            cd /io &&
-            ./test.sh
-            "
+        args: -c "
+          yum install -y cmake gcc g++ make &&
+          chmod +x /github/workspace/test.sh &&
+          cd /github/workspace &&
+          ./test.sh
+        "
 
       - name: Upload built wheel to PyPI
         if: success()

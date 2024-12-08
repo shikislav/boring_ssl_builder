@@ -15,7 +15,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies and run build script
+      - name: Clone BoringSSL
+        run: |
+          git clone https://boringssl.googlesource.com/boringssl
+          cd boringssl
+          mkdir build
+          cd build
+          cmake -DBUILD_SHARED_LIBS=1 ..
+          make
+
+      - name: Install dependencies and build Python wheel
         run: |
           yum install -y cmake gcc g++ make &&
           /opt/python/cp312-cp312/bin/python -m ensurepip &&
@@ -31,3 +40,4 @@ jobs:
         run: |
           python3 -m pip install --upgrade twine
           twine upload dist/*.whl
+

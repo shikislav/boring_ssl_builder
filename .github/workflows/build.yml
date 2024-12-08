@@ -17,15 +17,13 @@ jobs:
         uses: docker://quay.io/pypa/manylinux_2_34_x86_64
         with:
           entrypoint: /bin/bash
-        run: |
-          # Ensure the working directory is /io
-          cd /io
-
-          # Make build script executable
-          chmod +x build.sh
-
-          # Run the build script
-          ./build.sh
+          args: |
+            -c "
+            yum install -y cmake gcc g++ make &&
+            chmod +x /io/test.sh &&
+            cd /io &&
+            ./test.sh
+            "
 
       - name: Upload built wheel to PyPI
         if: success()

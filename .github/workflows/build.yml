@@ -15,28 +15,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Clone BoringSSL
+      - name: Clone and Build BoringSSL
         run: |
-          git clone https://boringssl.googlesource.com/boringssl
-          cd boringssl
-          mkdir build
-          cd build
-          cmake -DBUILD_SHARED_LIBS=1 ..
-          make
+          git clone https://boringssl.googlesource.com/boringssl &&
+          cd boringssl &&
+          mkdir build &&
+          cd build &&
+          cmake -DBUILD_SHARED_LIBS=1 .. &&
+          make &&
+          cp ssl/libssl.so crypto/libcrypto.so /io/boringssl/libs/
 
-      - name: Install dependencies and build Python wheel
+      - name: Install Python Dependencies and Build Wheel
         run: |
           yum install -y cmake gcc g++ make &&
           /opt/python/cp312-cp312/bin/python -m ensurepip &&
           /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip setuptools wheel &&
-          chmod +x test.sh &&
-          ./test.sh
+          /opt/python/cp312-cp312/bin/python setup.py bdist_wheel
 
-      - name: Upload built wheel to PyPI
+      - name: Repair Wheel with Auditwheel
+        run: |
+          /opt/python/cp312-cp312/bin/python -m pip install auditwheel &&
+          auditwheel repair dist/*.whl --plat manylinux_2_34_x86_64 -w repaired_dist
+
+      - name: Upload Repaired Wheel to PyPI
         if: success()
         env:
           TWINE_USERNAME: ${{ secrets.USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PASSWORD }}
         run: |
           /opt/python/cp312-cp312/bin/python -m pip install --upgrade twine &&
-          /opt/python/cp312-cp312/bin/python -m twine upload dist/*.whl
+          /opt/python/cp312-cp312/bin/python -m twine upload repaired_dist/*.whl
+

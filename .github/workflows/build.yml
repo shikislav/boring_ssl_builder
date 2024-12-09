@@ -2,59 +2,52 @@ name: Build and Upload Wheels
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ main, master ]
+  pull_request:
 
 jobs:
-  build-wheels:
+  build-and-upload:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        python-version: [ "3.10", "3.11", "3.12" ]
+        python-version: ["3.10", "3.11", "3.12"]
+      fail-fast: false
+
     environment: testpypi
     env:
       TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
       TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+      CIBW_BUILD: "cp3?-*"
+      CIBW_SKIP: "pp*_*" # skip pypy if you only want CPython
+      # Adjust if you want to skip older manylinux versions, default is manylinux2014
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
+      - name: Check out source
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel auditwheel cmake
+          python -m pip install --upgrade pip setuptools wheel twine cibuildwheel
 
-      - name: Build BoringSSL from source
+      # cibuildwheel will:
+      #  - Build wheels for all supported CPython versions on Linux, macOS, Windows.
+      #  - Use manylinux images automatically on Linux.
+      #  - Run auditwheel internally for Linux wheels.
+      #
+      # It places finished wheels in `wheelhouse/`.
+      - name: Build wheels with cibuildwheel
         run: |
-          echo "Building BoringSSL from source..."
-          git clone https://boringssl.googlesource.com/boringssl
-          cd boringssl
-          mkdir build
-          cd build
-          cmake -DBUILD_SHARED_LIBS=1 ..
-          make -j$(nproc)
-          # Create the .libs directory to store built .so files
-          mkdir -p ../boringssl_binary_build/.libs
-          cp ssl/libssl.so ../boringssl_binary_build/.libs/
-          cp crypto/libcrypto.so ../boringssl_binary_build/.libs/
-          cd ../..
+          cibuildwheel --platform linux --output-dir wheelhouse
 
-      - name: List generated libraries
-        run: ls -l boringssl/boringssl_binary_build/.libs
-
-      - name: Build wheel
-        run: |
-          python setup.py bdist_wheel
-          auditwheel repair dist/*.whl
-          ls wheelhouse/*.whl
+      - name: Show built wheels
+        run: ls wheelhouse
 
       - name: Upload to TestPyPI
         run: |
-          python -m pip install twine
-          twine upload --verbose --repository testpypi wheelhouse/*manylinux*.whl
+          python -m twine upload --repository testpypi wheelhouse/*.whl
 

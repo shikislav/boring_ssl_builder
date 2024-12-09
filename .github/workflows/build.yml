@@ -2,10 +2,7 @@ name: Build and Upload BoringSSL Wheel to PyPI
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Runs weekly on Sunday at 00:00 UTC
-  push:
-    branches:
-      - main
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
 
 jobs:
   build:
@@ -26,13 +23,13 @@ jobs:
           cmake -DBUILD_SHARED_LIBS=1 ..
           make
 
-      - name: Generate Dynamic Version
+      - name: Generate Dynamic Pre-Release Version
         id: version
         run: |
           DATE=$(date +%Y%m%d%H%M%S)
-          echo "VERSION=0.0.1+${DATE}" >> $GITHUB_ENV
+          echo "VERSION=0.0.1.dev${DATE}" >> $GITHUB_ENV
 
-      - name: Update Setup.py Version
+      - name: Update Setup.py with Pre-Release Version
         run: |
           sed -i "s/version='0.0.1'/version='$VERSION'/" setup.py
 

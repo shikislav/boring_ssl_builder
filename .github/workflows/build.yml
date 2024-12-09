@@ -28,7 +28,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo yum install -y cmake gcc gcc-c++ make
+          yum install -y cmake gcc gcc-c++ make
 
       - name: Clone and Build BoringSSL
         run: |

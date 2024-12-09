@@ -8,38 +8,29 @@ on:
 jobs:
   build-and-upload:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12"]
-      fail-fast: false
-
     environment: testpypi
     env:
-      TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-      CIBW_BUILD: "cp3?-*"
-      CIBW_SKIP: "pp*_*" # skip pypy if you only want CPython
-      # Adjust if you want to skip older manylinux versions, default is manylinux2014
+      TWINE_USERNAME: ${{ secrets.USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PASSWORD }}
+      # Specify exactly which Python versions you want:
+      # Here, Python 3.9 to 3.12 on Linux only.
+      CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
+      CIBW_SKIP: "pp*_*" # Skip PyPy if not needed
 
     steps:
       - name: Check out source
         uses: actions/checkout@v3
 
+      # Just pick a single Python to run cibuildwheel
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel twine cibuildwheel
 
-      # cibuildwheel will:
-      #  - Build wheels for all supported CPython versions on Linux, macOS, Windows.
-      #  - Use manylinux images automatically on Linux.
-      #  - Run auditwheel internally for Linux wheels.
-      #
-      # It places finished wheels in `wheelhouse/`.
       - name: Build wheels with cibuildwheel
         run: |
           cibuildwheel --platform linux --output-dir wheelhouse

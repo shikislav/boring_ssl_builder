@@ -12,33 +12,36 @@ jobs:
     env:
       TWINE_USERNAME: ${{ secrets.USERNAME }}
       TWINE_PASSWORD: ${{ secrets.PASSWORD }}
-      # Specify exactly which Python versions you want:
-      # Here, Python 3.9 to 3.12 on Linux only.
       CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
-      CIBW_SKIP: "pp*_*" # Skip PyPy if not needed
+      CIBW_SKIP: "pp*_*" # skip pypy if you only want CPython
 
     steps:
       - name: Check out source
         uses: actions/checkout@v3
 
-      # Just pick a single Python to run cibuildwheel
+      # Clone the BoringSSL repository into ./boringssl directory
+      - name: Clone BoringSSL
+        run: |
+          git clone https://boringssl.googlesource.com/boringssl
+          # Optionally checkout a stable commit or branch
+          # For example:
+          # cd boringssl
+          # git checkout <stable-commit-or-branch>
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel twine cibuildwheel
+        run: python -m pip install --upgrade pip setuptools wheel twine cibuildwheel
 
       - name: Build wheels with cibuildwheel
-        run: |
-          cibuildwheel --platform linux --output-dir wheelhouse
+        run: cibuildwheel --platform linux --output-dir wheelhouse
 
       - name: Show built wheels
         run: ls wheelhouse
 
       - name: Upload to TestPyPI
-        run: |
-          python -m twine upload --repository testpypi wheelhouse/*.whl
+        run: python -m twine upload --repository testpypi wheelhouse/*.whl
 

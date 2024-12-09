@@ -3,14 +3,18 @@
 # Install dependencies
 yum install -y cmake gcc g++ make
 
-# Set Python version for building
-PYTHON_VERSION=cp312-cp312
+# List of Python versions to build for
+PYTHON_VERSIONS=(
+    cp310-cp310
+    cp311-cp311
+    cp312-cp312
+)
 
-# Build the wheel
-/opt/python/${PYTHON_VERSION}/bin/python setup.py bdist_wheel
+for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
+    # Ensure pip and setuptools are available
+    /opt/python/${PYTHON_VERSION}/bin/python -m ensurepip
+    /opt/python/${PYTHON_VERSION}/bin/python -m pip install --upgrade pip setuptools wheel
 
-# Use auditwheel to make the wheel manylinux compatible
-auditwheel repair dist/*.whl
-
-# Move repaired wheel to the dist directory
-mv wheelhouse/*.whl dist/
+    # Build the wheel
+    /opt/python/${PYTHON_VERSION}/bin/python setup.py bdist_wheel
+done

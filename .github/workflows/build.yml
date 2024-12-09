@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Clone BoringSSL
+      - name: Clone and Build BoringSSL
         run: |
           git clone https://boringssl.googlesource.com/boringssl
           cd boringssl
@@ -24,20 +24,17 @@ jobs:
           cmake -DBUILD_SHARED_LIBS=1 ..
           make
 
-      - name: Install dependencies and build Python wheel
+      - name: Build Python Wheels
         run: |
-          yum install -y cmake gcc g++ make &&
-          /opt/python/cp312-cp312/bin/python -m ensurepip &&
-          /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip setuptools wheel &&
-          chmod +x test.sh &&
+          chmod +x test.sh
           ./test.sh
 
-      - name: Repair Wheel with Auditwheel
+      - name: Repair Wheels with Auditwheel
         run: |
           /opt/python/cp312-cp312/bin/python -m pip install auditwheel &&
           auditwheel repair dist/*.whl --plat manylinux_2_34_x86_64 -w repaired_dist
 
-      - name: Upload built wheel to PyPI
+      - name: Upload Built Wheels to PyPI
         if: success()
         env:
           TWINE_USERNAME: ${{ secrets.USERNAME }}
@@ -45,4 +42,3 @@ jobs:
         run: |
           /opt/python/cp312-cp312/bin/python -m pip install --upgrade twine &&
           /opt/python/cp312-cp312/bin/python -m twine upload repaired_dist/*.whl
-

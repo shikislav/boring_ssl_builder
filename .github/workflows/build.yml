@@ -21,20 +21,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Verify Python Version and Path
-      - name: Verify Python Version
-        run: |
-          /opt/python/${{ matrix.python-version }}/bin/python --version
-          /opt/python/${{ matrix.python-version }}/bin/python -m pip --version
-
-      # 3. Install System Dependencies
-      - name: Install system dependencies
-        run: |
-          yum install -y cmake gcc gcc-c++ make
-
-      # 4. Clone and Build BoringSSL
+      # 2. Clone and Build BoringSSL
       - name: Clone and Build BoringSSL
         run: |
+          echo "Building BoringSSL from source..."
           git clone https://boringssl.googlesource.com/boringssl
           cd boringssl
           mkdir build
@@ -45,18 +35,18 @@ jobs:
           cp ssl/libssl.so ../boringssl_binary_build/.libs/
           cp crypto/libcrypto.so ../boringssl_binary_build/.libs/
 
-      # 5. Verify Built Libraries
+      # 3. Verify Built Libraries
       - name: Verify Built Libraries
         run: |
           ls -l boringssl_binary_build/.libs
 
-      # 6. Install Python Build Tools
+      # 4. Install Python Build Tools
       - name: Install Python Build Tools
         run: |
           /opt/python/${{ matrix.python-version }}/bin/python -m ensurepip
           /opt/python/${{ matrix.python-version }}/bin/python -m pip install --upgrade pip setuptools wheel auditwheel
 
-      # 7. Generate Dynamic Pre-Release Version
+      # 5. Generate Dynamic Pre-Release Version
       - name: Generate Dynamic Pre-Release Version
         id: version
         run: |
@@ -64,34 +54,26 @@ jobs:
           VERSION=0.0.1.dev${DATE}
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      # 8. Update setup.py with Pre-Release Version
+      # 6. Update setup.py with Pre-Release Version
       - name: Update setup.py with Pre-Release Version
         run: |
           sed -i "s/version='0.0.1'/version='${VERSION}'/" setup.py
 
-      # 9. Build Python Wheel
+      # 7. Build Python Wheel
       - name: Build Python Wheel
         run: |
           /opt/python/${{ matrix.python-version }}/bin/python setup.py bdist_wheel
 
-      # 10. Repair Wheel with Auditwheel
+      # 8. Repair Wheel with Auditwheel
       - name: Repair Wheel with Auditwheel
         run: |
           auditwheel repair dist/*.whl -w repaired_dist
 
-      # 11. Test Built Wheel
+      # 9. Test Built Wheel
       - name: Test Built Wheel
         run: |
           /opt/python/${{ matrix.python-version }}/bin/python -m pip install repaired_dist/*.whl
           /opt/python/${{ matrix.python-version }}/bin/python -c "import boringssl_binary_build; print('Import successful!')"
 
-      # 12. Upload Built Wheels to PyPI
-      - name: Upload Built Wheels to PyPI
-        if: success() && github.ref == 'refs/heads/main'
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          /opt/python/${{ matrix.python-version }}/bin/python -m pip install --upgrade twine
-          /opt/python/${{ matrix.python-version }}/bin/python -m twine upload repaired_dist/*.whl
+      # 10. 
 

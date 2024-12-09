@@ -23,6 +23,7 @@ jobs:
           cd build
           cmake -DBUILD_SHARED_LIBS=1 ..
           make
+
       - name: Install dependencies and build Python wheel
         run: |
           yum install -y cmake gcc g++ make &&
@@ -30,7 +31,7 @@ jobs:
           /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip setuptools wheel &&
           chmod +x test.sh &&
           ./test.sh
-  
+
       - name: Repair Wheel with Auditwheel
         run: |
           /opt/python/cp312-cp312/bin/python -m pip install auditwheel &&
@@ -43,4 +44,5 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PASSWORD }}
         run: |
           /opt/python/cp312-cp312/bin/python -m pip install --upgrade twine &&
-          /opt/python/cp312-cp312/bin/python -m twine upload dist/*.whl
+          /opt/python/cp312-cp312/bin/python -m twine upload repaired_dist/*.whl
+

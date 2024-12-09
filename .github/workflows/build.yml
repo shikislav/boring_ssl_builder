@@ -10,12 +10,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11, 3.12]
     container:
       image: quay.io/pypa/manylinux_2_34_x86_64
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Install system dependencies
+        run: |
+          sudo yum install -y cmake gcc gcc-c++ make
 
       - name: Clone and Build BoringSSL
         run: |
@@ -25,9 +38,9 @@ jobs:
           cd build
           cmake -DBUILD_SHARED_LIBS=1 ..
           make
-          mkdir -p ../../boringssl_binary_build/.libs
-          cp ssl/libssl.so ../../boringssl_binary_build/.libs/
-          cp crypto/libcrypto.so ../../boringssl_binary_build/.libs/
+          mkdir -p ../boringssl_binary_build/.libs
+          cp ssl/libssl.so ../boringssl_binary_build/.libs/
+          cp crypto/libcrypto.so ../boringssl_binary_build/.libs/
 
       - name: Verify Built Libraries
         run: |
@@ -35,39 +48,39 @@ jobs:
 
       - name: Install Python Build Tools
         run: |
-          /opt/python/cp312-cp312/bin/python -m ensurepip
-          /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip setuptools wheel auditwheel
+          python -m ensurepip
+          python -m pip install --upgrade pip setuptools wheel auditwheel
 
       - name: Generate Dynamic Pre-Release Version
         id: version
         run: |
           DATE=$(date +%Y%m%d%H%M%S)
-          echo "VERSION=0.0.1.dev${DATE}" >> $GITHUB_ENV
+          VERSION=0.0.1.dev${DATE}
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Update Setup.py with Pre-Release Version
         run: |
-          sed -i "s/version='0.0.1'/version='$VERSION'/" setup.py
+          sed -i "s/version='0.0.1'/version='${VERSION}'/" setup.py
 
-      - name: Build Python Wheels
+      - name: Build Python Wheel
         run: |
-          chmod +x test.sh
-          ./test.sh
+          python setup.py bdist_wheel
 
-      - name: Repair Wheels with Auditwheel
-        continue-on-error: true
+      - name: Repair Wheel with Auditwheel
         run: |
-          auditwheel repair dist/*.whl --plat manylinux_2_34_x86_64 -w repaired_dist
+          auditwheel repair dist/*.whl -w repaired_dist
 
       - name: Test Built Wheel
         run: |
-          /opt/python/cp312-cp312/bin/python -m pip install repaired_dist/*.whl
-          /opt/python/cp312-cp312/bin/python -c "import boringssl_binary_build; print('Import successful!')"
+          python -m pip install repaired_dist/*.whl
+          python -c "import boringssl_binary_build; print('Import successful!')"
 
       - name: Upload Built Wheels to PyPI
-        if: success()
+        if: success() && github.ref == 'refs/heads/main'
         env:
-          TWINE_USERNAME: ${{ secrets.USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          /opt/python/cp312-cp312/bin/python -m pip install --upgrade twine &&
-          /opt/python/cp312-cp312/bin/python -m twine upload repaired_dist/*.whl
+          python -m pip install --upgrade twine
+          python -m twine upload repaired_dist/*.whl
+

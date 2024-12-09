@@ -1,20 +1,22 @@
 #!/bin/bash -ex
 
 # Install dependencies
-yum install -y cmake gcc g++ make
+sudo yum install -y cmake gcc g++ make
 
-# List of Python versions to build for
-PYTHON_VERSIONS=(
-    cp310-cp310
-    cp311-cp311
-    cp312-cp312
-)
+# Clone and build BoringSSL
+git clone https://boringssl.googlesource.com/boringssl
+cd boringssl
+mkdir build
+cd build
+cmake -DBUILD_SHARED_LIBS=1 ..
+make
+mkdir -p ../boringssl_binary_build/.libs
+cp ssl/libssl.so ../boringssl_binary_build/.libs/
+cp crypto/libcrypto.so ../boringssl_binary_build/.libs/
 
-for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"; do
-    # Ensure pip and setuptools are available
-    /opt/python/${PYTHON_VERSION}/bin/python -m ensurepip
-    /opt/python/${PYTHON_VERSION}/bin/python -m pip install --upgrade pip setuptools wheel
+# Ensure pip and setuptools are available for the current Python version
+python -m ensurepip
+python -m pip install --upgrade pip setuptools wheel
 
-    # Build the wheel
-    /opt/python/${PYTHON_VERSION}/bin/python setup.py bdist_wheel
-done
+# Build the wheel
+python setup.py bdist_wheel

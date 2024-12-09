@@ -1,25 +1,29 @@
 import os
 import setuptools
+from setuptools.command.build_ext import build_ext
+import subprocess
 
-# Define the package version. This will be updated by the GitHub Actions workflow.
-VERSION = os.getenv('VERSION', '0.0.1')
+class cmake_build_ext(build_ext):
+    def build_extensions(self):
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+        # Configure and build boringssl
+        # Adjust the paths/commands as needed for your boringssl source layout
+        subprocess.check_call(['cmake', '-DBUILD_SHARED_LIBS=1', '../../'], cwd=self.build_temp)
+        subprocess.check_call(['make', 'bssl'], cwd=self.build_temp)
+        ext_path = self.get_ext_fullpath('boringssl')
+        subprocess.check_call(['cp', self.build_temp + '/ssl/libssl.so', ext_path])
 
 setuptools.setup(
     name='boringssl-binary-build',
-    version=VERSION,
-    description='Python package bundling prebuilt BoringSSL binaries',
-    packages=['boringssl_binary_build'],
-    package_data={'boringssl_binary_build': ['.libs/*.so']},
-    include_package_data=True,
-    classifiers=[
-        'Programming Language :: Python :: 3',
-        'Programming Language :: C',
-        'Operating System :: OS Independent',
-    ],
-    python_requires='>=3.7',
-    # If you have any dependencies, list them here
-    install_requires=[
-        # e.g., 'requests>=2.25.1',
-    ],
+    version='0.0.6',
+    author="Jonatron",
+    author_email="jon.ath.4n+boring@gmail.com",
+    description='Build BoringSSL',
+    long_description='Build BoringSSL',
+    package_dir={"boringssl_binary_build": "."},
+    packages=["boringssl_binary_build"],
+    python_requires='>=3.10',  # Adjust as needed
+    ext_modules=[setuptools.extension.Extension('boringssl', sources=[])],
+    cmdclass={'build_ext': cmake_build_ext},
 )
-

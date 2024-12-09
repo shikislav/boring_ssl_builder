@@ -1,2 +1,1 @@
-global-include *.c *.cc *.cmake *.txt *.h *.S *.pl *.errordata *.go
-recursive-include boringssl_binary_build *.so
+global-include *.cc *.c *.cmake *.txt *.rs *.h *.S *.pl *.errordata *.go

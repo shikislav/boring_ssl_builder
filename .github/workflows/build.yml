@@ -2,7 +2,10 @@ name: Build and Upload BoringSSL Wheel to PyPI
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Runs weekly on Sunday
+    - cron: '0 0 * * 0'  # Runs weekly on Sunday at 00:00 UTC
+  push:
+    branches:
+      - main
 
 jobs:
   build:

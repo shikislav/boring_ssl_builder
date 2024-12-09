@@ -2,8 +2,7 @@ import os
 import setuptools
 from setuptools.command.build_ext import build_ext
 import subprocess
-from distutils.extension import Extension  # Correct import
-
+from distutils.extension import Extension
 
 class cmake_build_ext(build_ext):
     def build_extensions(self):
@@ -24,19 +23,20 @@ class cmake_build_ext(build_ext):
         # Build with Make
         subprocess.check_call(['make'], cwd=self.build_temp)
 
-        # Copy the built libraries to the package directory
-        ext_path = os.path.dirname(self.get_ext_fullpath('boringssl'))
+        # Copy the built libraries to the `.libs` directory
+        ext_path = os.path.join(os.path.dirname(__file__), "boringssl_binary_build", ".libs")
         os.makedirs(ext_path, exist_ok=True)
         subprocess.check_call(['cp', os.path.join(self.build_temp, 'ssl/libssl.so'), ext_path])
         subprocess.check_call(['cp', os.path.join(self.build_temp, 'crypto/libcrypto.so'), ext_path])
-
 
 setuptools.setup(
     name='boringssl-binary-build',
     version='0.0.1',
     description='Python package bundling prebuilt BoringSSL binaries',
+    packages=['boringssl_binary_build'],
+    package_data={'boringssl_binary_build': ['.libs/*.so']},
     ext_modules=[
-        Extension('boringssl', sources=[])  # Use `distutils.extension.Extension`
+        Extension('boringssl', sources=[])  # No C sources, we just use the shared libraries
     ],
     cmdclass={'build_ext': cmake_build_ext},
 )

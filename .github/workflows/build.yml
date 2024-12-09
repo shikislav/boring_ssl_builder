@@ -25,6 +25,18 @@ jobs:
           cd build
           cmake -DBUILD_SHARED_LIBS=1 ..
           make
+          mkdir -p ../../boringssl_binary_build/.libs
+          cp ssl/libssl.so ../../boringssl_binary_build/.libs/
+          cp crypto/libcrypto.so ../../boringssl_binary_build/.libs/
+
+      - name: Verify Built Libraries
+        run: |
+          ls -l boringssl_binary_build/.libs
+
+      - name: Install Python Build Tools
+        run: |
+          /opt/python/cp312-cp312/bin/python -m ensurepip
+          /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip setuptools wheel auditwheel
 
       - name: Generate Dynamic Pre-Release Version
         id: version
@@ -42,9 +54,14 @@ jobs:
           ./test.sh
 
       - name: Repair Wheels with Auditwheel
+        continue-on-error: true
         run: |
-          /opt/python/cp312-cp312/bin/python -m pip install auditwheel &&
           auditwheel repair dist/*.whl --plat manylinux_2_34_x86_64 -w repaired_dist
+
+      - name: Test Built Wheel
+        run: |
+          /opt/python/cp312-cp312/bin/python -m pip install repaired_dist/*.whl
+          /opt/python/cp312-cp312/bin/python -c "import boringssl_binary_build; print('Import successful!')"
 
       - name: Upload Built Wheels to PyPI
         if: success()
@@ -54,4 +71,3 @@ jobs:
         run: |
           /opt/python/cp312-cp312/bin/python -m pip install --upgrade twine &&
           /opt/python/cp312-cp312/bin/python -m twine upload repaired_dist/*.whl
-

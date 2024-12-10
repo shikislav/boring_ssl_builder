@@ -1,5 +1,7 @@
 name: Build and Upload Wheels
 
+
+
 on:
   push:
     branches: [ main, master ]
@@ -20,6 +22,11 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v3
+
+      - name: Set short SHA
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "BUILD_VERSION=${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}+g${SHORT_SHA}" >> $GITHUB_ENV
 
       - name: Clone BoringSSL
         run: git clone https://boringssl.googlesource.com/boringssl

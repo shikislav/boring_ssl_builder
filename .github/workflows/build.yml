@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: pypi
     env:
-      BASE_VERSION: 0.0.1  # Define the base version here
+      BASE_VERSION: 0.0.7  # Define the base version here
       TWINE_USERNAME: ${{ secrets.USERNAME }}
       TWINE_PASSWORD: ${{ secrets.PASSWORD }}
       CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"

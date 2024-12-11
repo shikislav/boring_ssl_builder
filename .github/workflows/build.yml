@@ -1,33 +1,20 @@
-name: Build and Upload Wheels
-
-on:
-  push:
-    branches: [ main, master ]
-    schedule:
-      - cron: '0 0 * * 0'
-
-
 jobs:
   build-and-upload:
     runs-on: ubuntu-latest
     environment: pypi
     env:
-      BASE_VERSION: 0.0.1  # Define the base version here
+      BASE_VERSION: 0.0.1
       TWINE_USERNAME: ${{ secrets.USERNAME }}
       TWINE_PASSWORD: ${{ secrets.PASSWORD }}
       CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
-      CIBW_SKIP: "pp*_*" # skip PyPy
+      CIBW_SKIP: "pp*_*"
 
     steps:
       - name: Check out source
         uses: actions/checkout@v3
 
-      - name: Set unique build version
-        run: |
-          BASE_VERSION=0.0.6
-          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
-          BUILD_VERSION="${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}+g${SHORT_SHA}"
-          echo "BUILD_VERSION=${BUILD_VERSION}" >> $GITHUB_ENV
+      - name: Clean previous builds
+        run: rm -rf wheelhouse/*
 
       - name: Clone BoringSSL
         run: git clone https://boringssl.googlesource.com/boringssl
@@ -46,7 +33,7 @@ jobs:
       - name: Show built wheels
         run: ls wheelhouse
 
-      # Only upload on push to main/master
       - name: Upload to PyPI
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: python -m twine upload --repository pypi wheelhouse/*.whl
+        run: python -m twine upload --skip-existing --repository pypi wheelhouse/*.whl
+

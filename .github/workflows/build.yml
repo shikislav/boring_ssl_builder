@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: pypi
     env:
-      BASE_VERSION: 0.0.7  # Define the base version here
+      BASE_VERSION: 0.0.1  # Define the base version here
       TWINE_USERNAME: ${{ secrets.USERNAME }}
       TWINE_PASSWORD: ${{ secrets.PASSWORD }}
       CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
@@ -20,8 +20,6 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v3
-
-      # Removed the Build Version Suffix steps
 
       - name: Clone BoringSSL
         run: git clone https://boringssl.googlesource.com/boringssl
@@ -43,4 +41,3 @@ jobs:
       - name: Upload to PyPI
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: python -m twine upload --repository pypi wheelhouse/*.whl
-

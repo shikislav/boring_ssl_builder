@@ -22,8 +22,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up build version suffix
-        id: set_suffix
-        run: echo "BUILD_VERSION_SUFFIX=$(openssl rand -hex 4)" >> $GITHUB_ENV
+        run: |
+          BUILD_VERSION_SUFFIX=$(head /dev/urandom | tr -dc 'a-z0-9' | head -c7)
+          echo "BUILD_VERSION_SUFFIX=$BUILD_VERSION_SUFFIX" >> $GITHUB_ENV
+
+      - name: Verify BUILD_VERSION_SUFFIX
+        run: echo "BUILD_VERSION_SUFFIX is $BUILD_VERSION_SUFFIX"
 
       - name: Clone BoringSSL
         run: git clone https://boringssl.googlesource.com/boringssl

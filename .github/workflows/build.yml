@@ -22,12 +22,12 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v3
 
-      - name: Set short SHA and build version
+      - name: Set unique build version
         run: |
+          BASE_VERSION=0.0.6
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
           BUILD_VERSION="${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}+g${SHORT_SHA}"
           echo "BUILD_VERSION=${BUILD_VERSION}" >> $GITHUB_ENV
-        shell: bash
 
       - name: Clone BoringSSL
         run: git clone https://boringssl.googlesource.com/boringssl

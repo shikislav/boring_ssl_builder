@@ -1,50 +1,83 @@
-name: Build and Upload Wheels
+name: Build, Test, and Publish
 
 on:
-  push:
-    branches: [ main, master ]
   schedule:
-    - cron: '0 0 * * 0'  # Every Sunday at midnight UTC
+    - cron: "0 0 */2 * *" # Runs every 2 days
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
-  build-and-upload:
+  build_boringssl:
     runs-on: ubuntu-latest
-    environment: pypi
-    strategy:
-      matrix:
-        python-version: [3.11, 3.12]
-    env:
-      TWINE_USERNAME: __token__
-      TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-      CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
-      CIBW_SKIP: "pp*_*"
 
     steps:
-      - name: Check out source
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+    - name: Build BoringSSL
+      run: |
+        git clone https://boringssl.googlesource.com/boringssl
+        cd boringssl && mkdir build && cd build
+        cmake -DBUILD_SHARED_LIBS=1 .. && make
 
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip setuptools wheel twine cibuildwheel cffi
 
-      - name: Install CMake
-        run: sudo apt-get install cmake
+    - name: Copy libssl.so to `bssl_binary` directory
+      run: |
+        cp boringssl/build/ssl/libssl.so boringssl_binary_build
 
-      - name: Install Make
-        run: sudo apt-get install build-essential
+    outputs:
+      boringssl-path: boringssl/build/ssl/libssl.so  # Output the path to be used by other jobs
 
-      - name: Build wheels with cibuildwheel
-        run: cibuildwheel --platform linux --output-dir wheelhouse
+  python_check:
+    runs-on: ubuntu-latest
 
-      - name: Show built wheels
-        run: ls wheelhouse
+    needs: build_boringssl  # Wait for BoringSSL build to complete
 
-      - name: Upload to PyPI
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: |
-          python -m twine upload --repository pypi wheelhouse/*.whl
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install cffi
+      run: |
+        python -m pip install --upgrade pip cffi
+
+    - name: Check BoringSSL Compatibility
+      run: |
+        python test.py --lib-path ${{ needs.build_boringssl.outputs.boringssl-path }}
+
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    needs: python_check 
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel twine
+
+    - name: Build Wheel
+      run: |
+        python setup.py sdist bdist_wheel
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        python -m twine upload dist/*

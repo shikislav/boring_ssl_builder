@@ -9,7 +9,7 @@ on:
 
 jobs:
   build_boringssl:
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
   outputs:
     boringssl_path: ${{ steps.set_boringssl_path.outputs.boringssl_path }}
@@ -23,9 +23,6 @@ jobs:
       git clone https://boringssl.googlesource.com/boringssl
       cd boringssl && mkdir build && cd build
       cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DBUILD_SHARED_LIBS=1 .. && make
-
-  - name: Create `bssl_binary` Directory
-    run: mkdir -p ${{ github.workspace }}/bssl_binary
 
   - name: Move Built File to `bssl_binary`
     run: |

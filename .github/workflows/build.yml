@@ -22,8 +22,7 @@ jobs:
 
     - name: Copy libssl.so to `bssl_binary` directory
       run: |
-        mkdir -p boringssl_binary_build
-        cp boringssl/build/ssl/libssl.so boringssl_binary_build/libssl.so
+        cp ${{ github.workspace }}/boringssl/build/ssl/libssl.so boringssl_binary_build/libssl.so
 
     outputs:
       boringssl-path: ${{ github.workspace }}/boringssl/build/ssl/libssl.so

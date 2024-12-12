@@ -3,6 +3,7 @@ name: Build, Test, and Publish
 on:
   schedule:
     - cron: "0 0 */2 * *" # Runs every 2 days
+      push:
   workflow_dispatch: # Allows manual trigger
 
 jobs:
@@ -19,13 +20,13 @@ jobs:
         cd boringssl && mkdir build && cd build
         cmake -DBUILD_SHARED_LIBS=1 .. && make
 
-
     - name: Copy libssl.so to `bssl_binary` directory
       run: |
-        cp boringssl/build/ssl/libssl.so boringssl_binary_build
+        mkdir -p boringssl_binary_build
+        cp boringssl/build/ssl/libssl.so boringssl_binary_build/libssl.so
 
     outputs:
-      boringssl-path: boringssl/build/ssl/libssl.so  # Output the path to be used by other jobs
+      boringssl-path: ${{ github.workspace }}/boringssl/build/ssl/libssl.so
 
   python_check:
     runs-on: ubuntu-latest
@@ -81,3 +82,4 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python -m twine upload dist/*
+

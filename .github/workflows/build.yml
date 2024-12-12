@@ -15,14 +15,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Build BoringSSL
-      run: |
-        git clone https://boringssl.googlesource.com/boringssl
-        cd boringssl && mkdir build && cd build
-        cmake -DBUILD_SHARED_LIBS=1 .. && make
+    # - name: Build BoringSSL
+    #   run: |
+    #     git clone https://boringssl.googlesource.com/boringssl
+    #     cd boringssl && mkdir build && cd build
+    #     cmake -DBUILD_SHARED_LIBS=1 .. && make
 
     - name: Copy libssl.so to `bssl_binary` directory
       run: |
+        ls
         pwd
   #       cp ${{ github.workspace }}/boringssl/build/ssl/libssl.so boringssl_binary_build/libssl.so
 

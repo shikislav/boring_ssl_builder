@@ -11,11 +11,16 @@ setup(
     version=generate_version(),
     author="boring",
     description="Python interface for BoringSSL using FFI",
-    packages=find_packages(),  # Automatically finds the `bssl_binary` folder
+    packages=find_packages(),  # Automatically finds the package directories
     python_requires=">=3.10",
     install_requires=["cffi"],
     package_data={
-        "boringssl_binary_build": ["libssl.so"],  # Include the BoringSSL shared library
+        "": ["bssl_binary/libssl.so"],  # Specify relative path to shared library
     },
     include_package_data=True,  # Ensures `package_data` files are included
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
 )

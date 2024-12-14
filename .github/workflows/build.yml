@@ -14,25 +14,24 @@ jobs:
 
       - name: Build BoringSSL
         run: |
+          set -e
           git clone https://boringssl.googlesource.com/boringssl
           mkdir bssl_build
           cd bssl_build
           cmake -DBUILD_SHARED_LIBS=1 ../boringssl
           make bssl
+          # Debug to confirm build output
+          echo "Build Output:"
+          ls -R ssl
 
       - name: Package BoringSSL as Python Wheel
         run: |
+          set -e
           mkdir -p boringssl_package
-          cp bssl_build/ssl/libssl.so boringssl_package/
+          cp bssl_build/ssl/libssl.so boringssl_package/ || (echo "libssl.so not found!" && exit 1)
           python3 setup.py bdist_wheel
         env:
           CFLAGS: "-fPIC"
-
-      - name: Upload Python Wheel
-        uses: actions/upload-artifact@v3
-        with:
-          name: boringssl-wheel
-          path: boringssl_package/dist/*.whl
 
   python_check:
     runs-on: ubuntu-latest

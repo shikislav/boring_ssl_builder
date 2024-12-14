@@ -1,5 +1,6 @@
-import argparse
 from cffi import FFI
+import os
+import boringssl_binary_build  # Import your installed package
 
 ffi = FFI()
 
@@ -14,8 +15,11 @@ SSL_CTX *SSL_CTX_new(const SSL_METHOD *method);
 const SSL_METHOD *TLS_method(void);
 """)
 
-def test_boringssl(lib_path):
+def test_boringssl():
     try:
+        # Locate the shared library bundled with the package
+        lib_path = os.path.join(os.path.dirname(boringssl_binary_build.__file__), "libssl.so")
+        print(f"Loading library from: {lib_path}")
         bssl = ffi.dlopen(lib_path)
 
         # Initialize SSL context and objects
@@ -31,8 +35,5 @@ def test_boringssl(lib_path):
         exit(1)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Test BoringSSL FFI compatibility.")
-    parser.add_argument("--lib-path", required=True, help="Path to the BoringSSL shared library.")
-    args = parser.parse_args()
+    test_boringssl()
 
-    test_boringssl(args.lib_path)

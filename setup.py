@@ -1,37 +1,24 @@
-import os
 import setuptools
-from setuptools.command.build_ext import build_ext
-import subprocess
 import datetime
 
 def generate_version():
-    base_version = "0.1.0"
-    timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    return f"{base_version}.{timestamp}"
-
-
-
-
-class cmake_build_ext(build_ext):
-    def build_extensions(self):
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', '-DBUILD_SHARED_LIBS=1', '../../'], cwd=self.build_temp)
-        subprocess.check_call(['make', 'bssl'], cwd=self.build_temp)
-        ext_path = self.get_ext_fullpath('boringssl')
-        subprocess.check_call(['cp', self.build_temp + '/ssl/libssl.so', ext_path])
-
+    base_version = '0.1.0'
+    timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    return f'{base_version}.{timestamp}'
 
 setuptools.setup(
     name='boringssl-binary-build',
     version=generate_version(),
-    author="boring",
-    author_email="boring",
-    description='Build BoringSSL',
-    long_description='Build BoringSSL',
-    package_dir={"boringssl_binary_build": "."},
-    packages=["boringssl_binary_build"],
+    author='boring',
+    author_email='boring@example.com',
+    description='Prebuilt BoringSSL binaries for Python',
+    long_description='A package containing prebuilt BoringSSL binaries.',
+    package_dir={'': '.'},
+    packages=[],
     python_requires='>=3.9',
-    ext_modules=[setuptools.extension.Extension('boringssl', sources=[])],
-    cmdclass={'build_ext': cmake_build_ext},
+    install_requires=[
+        'cffi>=1.15.0',  # Add required dependencies
+    ],
+    data_files=[('', ['libssl.so'])],
 )
+

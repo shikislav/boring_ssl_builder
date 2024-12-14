@@ -1,4 +1,7 @@
-from setuptools import setup, find_packages
+import os
+import setuptools
+from setuptools.command.build_ext import build_ext
+import subprocess
 import datetime
 
 def generate_version():
@@ -6,21 +9,29 @@ def generate_version():
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     return f"{base_version}.{timestamp}"
 
-setup(
-    name="boringssl_binary_build",  # Replace with your desired package name
+
+
+
+class cmake_build_ext(build_ext):
+    def build_extensions(self):
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+        subprocess.check_call(['cmake', '-DBUILD_SHARED_LIBS=1', '../../'], cwd=self.build_temp)
+        subprocess.check_call(['make', 'bssl'], cwd=self.build_temp)
+        ext_path = self.get_ext_fullpath('boringssl')
+        subprocess.check_call(['cp', self.build_temp + '/ssl/libssl.so', ext_path])
+
+
+setuptools.setup(
+    name='boringssl-binary-build',
     version=generate_version(),
     author="boring",
-    description="Python interface for BoringSSL using FFI",
-    packages=find_packages(),  # Automatically finds the package directories
-    python_requires=">=3.10",
-    install_requires=["cffi"],
-    package_data={
-        "": ["bssl_binary/libssl.so"],  # Specify relative path to shared library
-    },
-    include_package_data=True,  # Ensures `package_data` files are included
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
+    author_email="boring",
+    description='Build BoringSSL',
+    long_description='Build BoringSSL',
+    package_dir={"boringssl_binary_build": "."},
+    packages=["boringssl_binary_build"],
+    python_requires='>=3.9',
+    ext_modules=[setuptools.extension.Extension('boringssl', sources=[])],
+    cmdclass={'build_ext': cmake_build_ext},
 )

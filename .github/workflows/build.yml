@@ -25,6 +25,7 @@ jobs:
 
     - name: Check Build file
       run: |
+        cd bssl_build
         pwd
         ls 
         tree

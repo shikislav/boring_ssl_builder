@@ -1,24 +1,18 @@
-import setuptools
-import datetime
+from setuptools import setup, find_packages
+from setuptools.command.build_ext import build_ext
 
-def generate_version():
-    base_version = '0.1.0'
-    timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    return f'{base_version}.{timestamp}'
+class CustomBuild(build_ext):
+    def run(self):
+        # Ensure BoringSSL binaries are included
+        self.copy_file('bssl_build/crypto/libcrypto.so', 'bssl_binary')
+        self.copy_file('bssl_build/ssl/libssl.so', 'bssl_binary')
 
-setuptools.setup(
-    name='boringssl-binary-build',
-    version=generate_version(),
-    author='boring',
-    author_email='boring@example.com',
-    description='Prebuilt BoringSSL binaries for Python',
-    long_description='A package containing prebuilt BoringSSL binaries.',
-    package_dir={'': '.'},
-    packages=[],
-    python_requires='>=3.9',
-    install_requires=[
-        'cffi>=1.15.0',  # Add required dependencies
+setup(
+    name='boringssl_binary_build',
+    version='0.1.0',
+    packages=find_packages(),
+    data_files=[
+        ('bssl_binary', ['bssl_build/crypto/libcrypto.so', 'bssl_build/ssl/libssl.so'])
     ],
-    data_files=[('', ['libssl.so'])],
+    cmdclass={'build_ext': CustomBuild},
 )
-

@@ -1,3 +1,4 @@
+
 name: Build and Test BoringSSL
 
 on:
@@ -23,10 +24,16 @@ jobs:
           mkdir bssl_build
           cd bssl_build
           cmake -DBUILD_SHARED_LIBS=1 ../boringssl
-          make bssl
+          make
+          ls -l ./crypto ./ssl  # Check the build output
+        env:
+          CFLAGS: "-fPIC"
 
       - name: Package BoringSSL as Python Wheel
         run: |
+          mkdir -p build_output
+          cp bssl_build/crypto/libcrypto.so build_output/
+          cp bssl_build/ssl/libssl.so build_output/
           python3 -m pip install --upgrade pip
           python3 -m pip install build
           python3 -m build

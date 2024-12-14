@@ -23,7 +23,7 @@ jobs:
           mkdir bssl_build
           cd bssl_build
           cmake -DBUILD_SHARED_LIBS=1 ../boringssl
-          make
+          make bssl
 
       - name: Package BoringSSL as Python Wheel
         run: |

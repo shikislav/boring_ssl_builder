@@ -13,6 +13,17 @@ jobs:
       run: |
         sudo apt-get install -y cmake build-essential
 
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+
+
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
     - name: Build BoringSSL
       run: |
         git clone https://boringssl.googlesource.com/boringssl
@@ -26,14 +37,22 @@ jobs:
         ls -l boringssl_build/crypto/libcrypto.so
         ls -l boringssl_build/ssl/libssl.so
 
+
+
+    - name: Install Build Dependencies
+      run: |
+        python -m pip install cffi
+
+    - name: Test
+      run: python test.py --lib-path boringssl_build/ssl/libssl.so
+
     - name: Upload BoringSSL Artifacts
       if: success()
       uses: actions/upload-artifact@v3
       with:
         name: boringssl
         path: |
-          boringssl_build/crypto/libcrypto.so
-          boringssl_build/ssl/libssl.so
+          boringssl_build/
 
 
   test_bss_on_python:
@@ -48,7 +67,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: boringssl
-        path: boringssl_build
+        path: boringssl_build/
 
 
     - name: Verify Build Artifacts

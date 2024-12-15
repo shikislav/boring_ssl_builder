@@ -48,7 +48,7 @@ jobs:
 
     - name: Collect libssl.so and Dependencies
       run: |
-        mkdir -p boringssl_artifacts
+        mkdir -p boringssl_artifacts/crypto
         cp boringssl_build/ssl/libssl.so boringssl_artifacts/
         cp boringssl_build/crypto/libcrypto.so boringssl_artifacts/crypto/
         

@@ -43,6 +43,9 @@ jobs:
           ls -l boringssl_build/crypto/libcrypto.so
           ls -l boringssl_build/ssl/libssl.so
 
+      - name: Test
+        run: python ./test.py ./boringssl_build/ssl/libssl.so
+
       # - name: Prepare BoringSSL Binaries
       #   run: |
       #     mkdir -p boringssl_binary_build/bssl_binary

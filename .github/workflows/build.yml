@@ -44,7 +44,7 @@ jobs:
           ls -l boringssl_build/ssl/libssl.so
 
       - name: Test
-        run: python test.py boringssl_build/ssl/libssl.so
+        run: python test.py --lib-path boringssl_build/ssl/libssl.so
 
       # - name: Prepare BoringSSL Binaries
       #   run: |

@@ -20,7 +20,6 @@ jobs:
         python-version: "3.12"
 
 
-
     - name: Checkout Code
       uses: actions/checkout@v3
 
@@ -30,12 +29,7 @@ jobs:
         mkdir -p boringssl_build
         cd boringssl_build
         cmake -DBUILD_SHARED_LIBS=1 ../boringssl
-        make bssl
-
-    - name: Verify Build Artifacts
-      run: |
-        ls -l boringssl_build/crypto/libcrypto.so
-        ls -l boringssl_build/ssl/libssl.so
+        make bssl -j$(nproc)
 
 
     - name: Install Build Dependencies
@@ -43,14 +37,13 @@ jobs:
         python -m pip install cffi
 
     - name: Test
-      run: python test.py --lib-path boringssl_build/ssl/libssl.so
-
+      run: python test.py --lib-path boringssl_build/libssl.so
 
     - name: Collect libssl.so and Dependencies
       run: |
-        mkdir -p boringssl_artifacts/crypto
-        cp boringssl_build/ssl/libssl.so boringssl_artifacts/
-        cp boringssl_build/crypto/libcrypto.so boringssl_artifacts/crypto/
+        mkdir -p boringssl_artifacts
+        cp boringssl_build/libssl.so boringssl_artifacts/
+        cp boringssl_build/libcrypto.so boringssl_artifacts/
         
         # # Use ldd to find dependencies of libssl.so and libcrypto.so
         # for lib in boringssl_build/ssl/libssl.so boringssl_build/crypto/libcrypto.so; do

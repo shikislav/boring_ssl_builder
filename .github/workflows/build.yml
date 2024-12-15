@@ -50,10 +50,13 @@ jobs:
       run: |
         mkdir -p boringssl_artifacts
         cp boringssl_build/ssl/libssl.so boringssl_artifacts/
+        cp boringssl_build/crypto/libcrypto.so boringssl_artifacts/
         
-        # Use ldd to find dependencies of libssl.so
-        ldd boringssl_build/ssl/libssl.so | grep "=> /" | awk '{print $3}' | while read -r dep; do
-          cp --parents "$dep" boringssl_artifacts/
+        # Use ldd to find dependencies of libssl.so and libcrypto.so
+        for lib in boringssl_build/ssl/libssl.so boringssl_build/crypto/libcrypto.so; do
+          ldd "$lib" | grep "=> /" | awk '{print $3}' | while read -r dep; do
+            cp --parents "$dep" boringssl_artifacts/
+          done
         done
 
     - name: Upload BoringSSL Artifacts

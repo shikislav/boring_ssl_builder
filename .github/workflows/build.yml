@@ -76,10 +76,9 @@ jobs:
           python-version: "3.12"
 
 
-      - name: test_it
-        run: |
-          python python test.py --lib-path boringssl_build/ssl/libssl.so
 
+      - name: Test
+        run: python test.py --lib-path boringssl_build/ssl/libssl.so
 
       # - name: Install build dependencies
       #   run: |

@@ -80,11 +80,6 @@ jobs:
         path: boringssl_artifacts/
 
 
-    - name: Verify Build Artifacts
-      run: |
-        ls -l boringssl_build/crypto/libcrypto.so
-        ls -l boringssl_build/ssl/libssl.so
-
     - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
@@ -95,7 +90,7 @@ jobs:
         python -m pip install cffi
 
     - name: Test
-      run: python test.py --lib-path boringssl_artifacts/ssl/libssl.so
+      run: python test.py --lib-path boringssl_artifacts/libssl.so
 
 
 

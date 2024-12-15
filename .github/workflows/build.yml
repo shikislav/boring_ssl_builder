@@ -31,7 +31,7 @@ jobs:
         ls -l boringssl_build/ssl/libssl.so
 
     - name: Upload BoringSSL Artifacts
-      if: success()'
+      if: success()
       uses: actions/upload-artifact@v3
       with:
         name: boringssl

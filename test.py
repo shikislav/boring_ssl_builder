@@ -18,7 +18,7 @@ const SSL_METHOD *TLS_method(void);
 def test_boringssl():
     try:
         # Locate the shared library bundled with the package
-        lib_path = os.path.join(os.path.dirname(boringssl_binary_build.__file__), "libssl.so")
+        lib_path = os.path.join(os.path.dirname(boringssl_binary_build.__file__), "bssl_binary", "libssl.so")
         print(f"Loading library from: {lib_path}")
         bssl = ffi.dlopen(lib_path)
 
@@ -36,4 +36,3 @@ def test_boringssl():
 
 if __name__ == "__main__":
     test_boringssl()
-

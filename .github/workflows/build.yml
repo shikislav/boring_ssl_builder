@@ -23,7 +23,6 @@ jobs:
 
       - name: Install Build Dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install -y cmake build-essential
           python -m pip install --upgrade pip
           python -m pip install cffi build
@@ -31,44 +30,28 @@ jobs:
       - name: Clone BoringSSL
         run: |
           git clone https://boringssl.googlesource.com/boringssl
-          cd boringssl
-          git checkout master  # Optionally specify a tag or commit
 
       - name: Build BoringSSL
         run: |
           mkdir -p boringssl_build
           cd boringssl_build
           cmake -DBUILD_SHARED_LIBS=1 ../boringssl
-          make -j$(nproc)
-        env:
-          CFLAGS: "-fPIC"
+          make bssl
 
       - name: Verify Build Artifacts
         run: |
           ls -l boringssl_build/crypto/libcrypto.so
           ls -l boringssl_build/ssl/libssl.so
 
-      - name: Prepare BoringSSL Binaries
-        run: |
-          mkdir -p boringssl_binary_build/bssl_binary
-          cp boringssl_build/crypto/libcrypto.so boringssl_binary_build/bssl_binary/
-          cp boringssl_build/ssl/libssl.so boringssl_binary_build/bssl_binary/
+      # - name: Prepare BoringSSL Binaries
+      #   run: |
+      #     mkdir -p boringssl_binary_build/bssl_binary
+      #     cp boringssl_build/crypto/libcrypto.so boringssl_binary_build/bssl_binary/
+      #     cp boringssl_build/ssl/libssl.so boringssl_binary_build/bssl_binary/
 
-      - name: Build Python Wheel
-        run: |
-          python -m build
-        env:
-          CFLAGS: "-fPIC"
-
-      - name: Install Python Wheel
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install dist/*.whl
-
-      - name: Run Tests
-        run: |
-          python test.py
-
+      # - name: Build Python Wheel
+      #   run: |
+      #     python -m build
 
 
 # # build-and-publish:

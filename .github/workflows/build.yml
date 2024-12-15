@@ -38,7 +38,6 @@ jobs:
         ls -l boringssl_build/ssl/libssl.so
 
 
-
     - name: Install Build Dependencies
       run: |
         python -m pip install cffi
@@ -46,13 +45,24 @@ jobs:
     - name: Test
       run: python test.py --lib-path boringssl_build/ssl/libssl.so
 
+
+    - name: Collect libssl.so and Dependencies
+      run: |
+        mkdir -p boringssl_artifacts
+        cp boringssl_build/ssl/libssl.so boringssl_artifacts/
+        
+        # Use ldd to find dependencies of libssl.so
+        ldd boringssl_build/ssl/libssl.so | grep "=> /" | awk '{print $3}' | while read -r dep; do
+          cp --parents "$dep" boringssl_artifacts/
+        done
+
     - name: Upload BoringSSL Artifacts
       if: success()
       uses: actions/upload-artifact@v3
       with:
         name: boringssl
         path: |
-          boringssl_build/
+          boringssl_artifacts/
 
 
   test_bss_on_python:
@@ -67,7 +77,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: boringssl
-        path: boringssl_build/
+        path: boringssl_artifacts/
 
 
     - name: Verify Build Artifacts
@@ -85,7 +95,7 @@ jobs:
         python -m pip install cffi
 
     - name: Test
-      run: python test.py --lib-path boringssl_build/ssl/libssl.so
+      run: python test.py --lib-path boringssl_artifacts/ssl/libssl.so
 
 
 

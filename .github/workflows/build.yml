@@ -45,13 +45,13 @@ jobs:
     - name: Build Python Wheel
       run: |
         python -m build
-        cp dist/*.whl $GITHUB_WORKSPACE/
-        rm -fr bssl_build
 
-    - name: Test
-      run: |
-        ls $GITHUB_WORKSPACE
-        pip install $GITHUB_WORKSPACE/bssl_build*.whl
+    - name: Upload Wheel to Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: bssl_wheel
+        path: dist/bssl_build*.whl
+
 
 
   test_bss_on_python:
@@ -63,17 +63,25 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      # - name: Checkout Code
-      #   uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Download BoringSSL Artifacts
+        uses: actions/download-artifact@v3
         with:
-            python-version: ${{ matrix.python-version }}
+          name: bssl_wheel
+          path: dist/
 
       - name: Install Build Dependencies
         run: |
-          ls $GITHUB_WORKSPACE
+          ls
+          echo "start unzip"
+          unzip bssl_build*.whl -f
+          echo "end unzip"
+          ls
+
+      # - name: Setup Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #       python-version: ${{ matrix.python-version }}
+
       #     python -m pip install --upgrade pip
       #     pip install $GITHUB_WORKSPACE/bssl_build*.whl
 

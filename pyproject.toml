@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bssl_build"
+version = "0.0.1"
+description = "A package for accessing BoringSSL binaries"
+license = { text = "MIT" }
+dependencies = ["cffi>=1.15.0"]  # Add cffi as a dependency
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[tool.setuptools.package-data]
+bssl_build = ["libcrypto.so", "libssl.so"]

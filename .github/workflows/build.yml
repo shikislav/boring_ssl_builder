@@ -13,144 +13,130 @@ jobs:
       run: |
         sudo apt-get install -y cmake build-essential
 
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
     - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
         python-version: "3.12"
 
-
-    - name: Checkout Code
-      uses: actions/checkout@v3
+    - name: Install Python Dependencies
+      run: pip install build
 
     - name: Build BoringSSL
       run: |
         git clone https://boringssl.googlesource.com/boringssl
-        mkdir -p boringssl_build
-        cd boringssl_build
+        mkdir -p build
+        cd build
         cmake -DBUILD_SHARED_LIBS=1 ../boringssl
         make bssl -j$(nproc)
 
-
-    - name: Install Build Dependencies
-      run: |
-        python -m pip install cffi
-
-    - name: Test
-      run: python test.py --lib-path boringssl_build/libssl.so
-
     - name: Collect libssl.so and Dependencies
       run: |
-        mkdir -p boringssl_artifacts
-        cp boringssl_build/libssl.so boringssl_artifacts/
-        cp boringssl_build/libcrypto.so boringssl_artifacts/
-        
-        # # Use ldd to find dependencies of libssl.so and libcrypto.so
-        # for lib in boringssl_build/ssl/libssl.so boringssl_build/crypto/libcrypto.so; do
-        #   ldd "$lib" | grep "=> /" | awk '{print $3}' | while read -r dep; do
-        #     cp --parents "$dep" boringssl_artifacts/
-        #   done
-        # done
-
-    - name: Upload BoringSSL Artifacts
-      if: success()
-      uses: actions/upload-artifact@v3
-      with:
-        name: boringssl
-        path: |
-          boringssl_artifacts/
+        mkdir -p bssl
+        cp build/libssl.so boringssl_binary_build/
+        cp build/libcrypto.so boringssl_binary_build/
 
 
-  test_bss_on_python:
-    needs: build_bss
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Download BoringSSL Artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: boringssl
-        path: boringssl_artifacts/
-
-
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.12"
-
-    - name: Install Build Dependencies
+    - name: Build Python Wheel
       run: |
-        python -m pip install cffi
-
-    - name: Test
-      run: python test.py --lib-path boringssl_artifacts/libssl.so
-
+        python -m build
+        ls
+        ls dist
 
 
-    # strategy:
-    #   matrix:
-    #     python-version: ["3.10", "3.11", "3.12"]
 
-    # steps:
-    #   - name: Checkout Code
-    #     uses: actions/checkout@v3
-
-    #   - name: Set up Python ${{ matrix.python-version }}
-    #     uses: actions/setup-python@v4
-    #     with:
-    #       python-version: ${{ matrix.python-version }}
-
-    #   - name: Install Build Dependencies
-    #     run: |
-    #       python -m pip install --upgrade pip
-    #       python -m pip install cffi
-
-
-    #   - name: Test
-    #     run: python test.py --lib-path boringssl_build/ssl/libssl.so
-
-
-  # build_and_publish:
+  # test_bss_on_python:
   #   needs: build_bss
   #   runs-on: ubuntu-latest
 
   #   steps:
+  #   - name: Checkout Code
+  #     uses: actions/checkout@v3
 
-  #     - name: Set up Python 3.12
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.12"
+  #   - name: Download BoringSSL Artifacts
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: boringssl
+  #       path: boringssl_artifacts/
 
-  #     - name: Install Build Dependencies
-  #       run: |
-  #         python -m pip install cffi
 
-  #     - name: Test
-  #       run: python test.py --lib-path boringssl_build/ssl/libssl.so
+  #   - name: Set up Python 3.12
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: "3.12"
 
-      # - name: Install build dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     python -m pip install build twine
+  #   - name: Install Build Dependencies
+  #     run: |
+  #       python -m pip install cffi
 
-      # - name: Prepare BoringSSL for Packaging
-      #   run: |
-      #     mkdir -p lib/ssl
-      #     cp boringssl_downloaded/ssl/libssl.so lib/ssl/
-      #     cp boringssl_downloaded/crypto/libcrypto.so lib/crypto/
-      #   # Adjust paths as necessary based on your project structure
+  #   - name: Test
+  #     run: python test.py --lib-path boringssl_artifacts/libssl.so
 
-      # - name: Build Wheel
-      #   run: |
-      #     python -m build --wheel
 
-      # - name: Publish to PyPI
-      #   env:
-      #     TWINE_USERNAME: __token__
-      #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      #   run: |
-      #     python -m twine upload dist/*
+
+  #   # strategy:
+  #   #   matrix:
+  #   #     python-version: ["3.10", "3.11", "3.12"]
+
+  #   # steps:
+  #   #   - name: Checkout Code
+  #   #     uses: actions/checkout@v3
+
+  #   #   - name: Set up Python ${{ matrix.python-version }}
+  #   #     uses: actions/setup-python@v4
+  #   #     with:
+  #   #       python-version: ${{ matrix.python-version }}
+
+  #   #   - name: Install Build Dependencies
+  #   #     run: |
+  #   #       python -m pip install --upgrade pip
+  #   #       python -m pip install cffi
+
+
+  #   #   - name: Test
+  #   #     run: python test.py --lib-path boringssl_build/ssl/libssl.so
+
+
+  # # build_and_publish:
+  # #   needs: build_bss
+  # #   runs-on: ubuntu-latest
+
+  # #   steps:
+
+  # #     - name: Set up Python 3.12
+  # #       uses: actions/setup-python@v4
+  # #       with:
+  # #         python-version: "3.12"
+
+  # #     - name: Install Build Dependencies
+  # #       run: |
+  # #         python -m pip install cffi
+
+  # #     - name: Test
+  # #       run: python test.py --lib-path boringssl_build/ssl/libssl.so
+
+  #     # - name: Install build dependencies
+  #     #   run: |
+  #     #     python -m pip install --upgrade pip
+  #     #     python -m pip install build twine
+
+  #     # - name: Prepare BoringSSL for Packaging
+  #     #   run: |
+  #     #     mkdir -p lib/ssl
+  #     #     cp boringssl_downloaded/ssl/libssl.so lib/ssl/
+  #     #     cp boringssl_downloaded/crypto/libcrypto.so lib/crypto/
+  #     #   # Adjust paths as necessary based on your project structure
+
+  #     # - name: Build Wheel
+  #     #   run: |
+  #     #     python -m build --wheel
+
+  #     # - name: Publish to PyPI
+  #     #   env:
+  #     #     TWINE_USERNAME: __token__
+  #     #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+  #     #   run: |
+  #     #     python -m twine upload dist/*
 

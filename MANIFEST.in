@@ -1,1 +1,0 @@
-include boringssl_binary_build/bssl_binary/*.so

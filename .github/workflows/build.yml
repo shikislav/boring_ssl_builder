@@ -36,13 +36,11 @@ jobs:
       run: |
         cp build/libssl.so bssl_build/
         cp build/libcrypto.so bssl_build/
-        ls
 
     - name: Clean Up
       run: |
         rm -fr boringssl
         rm -fr build
-
 
     - name: Build Python Wheel
       run: |

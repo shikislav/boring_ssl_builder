@@ -67,7 +67,7 @@ jobs:
       - name: Download BoringSSL Artifacts
         uses: actions/download-artifact@v3
         with:
-          name: bssl_wheel
+          name: bssl_wheel_and_test
 
       - name: Setup Python
         uses: actions/setup-python@v4

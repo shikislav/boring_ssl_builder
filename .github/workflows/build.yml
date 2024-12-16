@@ -51,10 +51,12 @@ jobs:
       run: |
         python -m build
         cp dist/*.whl $GITHUB_WORKSPACE/
+        ls $GITHUB_WORKSPACE
 
 
     - name: Test
       run: |
+        ls $GITHUB_WORKSPACE
         pip install $GITHUB_WORKSPACE/bssl_build*.whl
         python test.py
 

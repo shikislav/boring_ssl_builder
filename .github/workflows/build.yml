@@ -55,8 +55,36 @@ jobs:
           test.py
 
 
+  test_bssl_on_python:
+        needs: build_bssl
+        runs-on: ubuntu-latest
+
+        strategy:
+          matrix:
+            python-version: ['3.9', "3.10", "3.11", "3.12"]
+
+        steps:
+        - name: Setup Python
+          uses: actions/setup-python@v4
+          with:
+              python-version: ${{ matrix.python-version }}
+
+        - name: Download Wheel Artifact
+          uses: actions/download-artifact@v3
+          with:
+            name: bssl_wheel_and_test
+
+
+        - name: Test Installation
+          run: |
+            python -m pip install --upgrade pip
+            pip install dist/bssl_build*.whl
+            python test.py
+
+
+
   publish_to_pypi:
-      needs: build_bssl
+      needs: test_bssl_on_python
       if: ${{ success() }}
       runs-on: ubuntu-latest
       steps:
@@ -64,8 +92,7 @@ jobs:
       - name: Download Wheel Artifact
         uses: actions/download-artifact@v3
         with:
-          name: bssl_wheel
-          path: dist/
+          name: bssl_wheel_and_test
 
       - name: Publish to PyPI
         env:

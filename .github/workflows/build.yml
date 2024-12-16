@@ -56,7 +56,7 @@ jobs:
 
 
   publish_to_pypi:
-      needs: test_bssl_on_python
+      needs: build_bssl
       if: ${{ success() }}
       runs-on: ubuntu-latest
       steps:

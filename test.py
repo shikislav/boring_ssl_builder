@@ -1,5 +1,5 @@
 from cffi import FFI
-import boringssl_binary_build
+import bssl_build
 
 ffi = FFI()
 

@@ -35,8 +35,8 @@ jobs:
     - name: Collect libssl.so and Dependencies
       run: |
         mkdir -p bssl
-        cp build/libssl.so boringssl_binary_build/
-        cp build/libcrypto.so boringssl_binary_build/
+        cp build/libssl.so bssl/
+        cp build/libcrypto.so bssl/
 
 
     - name: Build Python Wheel

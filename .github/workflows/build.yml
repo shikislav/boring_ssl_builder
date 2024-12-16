@@ -45,14 +45,8 @@ jobs:
     - name: Build Python Wheel
       run: |
         python -m build
-        rm -fr bssl_build
-
-    - name: Build Python Wheel
-      run: |
-        python -m build
         cp dist/*.whl $GITHUB_WORKSPACE/
-        ls $GITHUB_WORKSPACE
-
+        rm -fr bssl_build
 
     - name: Test
       run: |

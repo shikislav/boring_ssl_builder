@@ -18,7 +18,7 @@ ffi.cdef("""
     int SSL_read(SSL *ssl, void *buf, int num);
 """)
 
-libcrypto, libssl = boringssl_binary_build.load_bssl_libraries(ffi)
+libcrypto, libssl = bssl_build.load_bssl_libraries(ffi)
 
 ctx = libssl.SSL_CTX_new(libssl.TLS_method())
 print("SSL context created:", ctx)

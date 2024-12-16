@@ -69,28 +69,19 @@ jobs:
           name: bssl_wheel
           path: dist/
 
-      - name: Install Build Dependencies
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: ${{ matrix.python-version }}
+
+      - name: Test Installation
         run: |
-          ls
-          echo "start unzip"
-          unzip bssl_build*.whl -f
-          echo "end unzip"
-          ls
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #       python-version: ${{ matrix.python-version }}
-
-      #     python -m pip install --upgrade pip
-      #     pip install $GITHUB_WORKSPACE/bssl_build*.whl
-
-      # - name: Test
-      #   run: |
-      #     python test.py
-
-
-
+          python -m pip install --upgrade pip
+          pip install dist/bssl_build*.whl
+          echo "Listing files in site-packages:"
+          ls -l $(python -c "import site; print(site.getsitepackages()[0])")
+          echo "Listing files in bssl_build directory:"
+          ls -l $(python -c "import site; print(site.getsitepackages()[0])")/bssl_build
   #     # - name: Publish to PyPI
   #     #   env:
   #     #     TWINE_USERNAME: __token__

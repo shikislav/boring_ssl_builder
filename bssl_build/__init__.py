@@ -1,24 +1,16 @@
-import pathlib
 from cffi import FFI
+import importlib.resources as resources
 
-current_dir = pathlib.Path(__file__).parent
-
-libcrypto_path = current_dir.joinpath('libcrypto.so').resolve()
-libssl_path = current_dir.joinpath('libssl.so').resolve()
+def get_library_path(lib_name):
+    return resources.path(__package__, lib_name)
 
 def load_bssl_libraries(ffi: FFI):
     """
     Loads the BoringSSL libraries (libcrypto and libssl) using the provided FFI instance.
     This function assumes `ffi.cdef` has already been called by the user.
-    
-    Args:
-        ffi (FFI): The CFFI instance with the necessary definitions (cdef).
-
-    Returns:
-        tuple: A tuple containing the loaded libcrypto and libssl libraries.
     """
-    # Load libraries using ffi.dlopen
-    libcrypto = ffi.dlopen(str(libcrypto_path))
-    libssl = ffi.dlopen(str(libssl_path))
-    
+    with get_library_path('libcrypto.so') as libcrypto_path, \
+         get_library_path('libssl.so') as libssl_path:
+        libcrypto = ffi.dlopen(str(libcrypto_path))
+        libssl = ffi.dlopen(str(libssl_path))
     return libcrypto, libssl
